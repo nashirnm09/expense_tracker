@@ -1,0 +1,199 @@
+.container {
+  top: 50px;
+  background: #eee;
+  width: 80%;
+  display: block;
+  padding: 20px;
+  margin: 10px auto;
+  box-shadow: 0 0 3px lightgray;
+}
+
+.input {
+  width: 100%;
+  margin: 15px 5px;
+}
+
+.center {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.center Link {
+  color: black;
+  margin-bottom: 5px;
+}
+
+/* home form */
+.header {
+  background-color: #d1b797;
+  padding: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.header .left {
+  color: #bc3038;
+}
+
+.header .user-logo {
+  border: 1px solid white;
+  border-radius: 50%;
+  padding: 3px;
+  margin-right: 6px;
+}
+
+@media screen and (max-width: 600px) {
+  .header {
+    padding: 20px 10px;
+  }
+
+  .header .user-logo {
+    display: none;
+  }
+
+  .header .left h3 {
+    font-size: 1.2rem;
+  }
+
+  .btn.logout {
+    /* display: ; */
+  }
+}
+
+.content {
+  margin-top: 20px;
+}
+
+.filters {
+  width: 99%;
+  padding: 0px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.filters-modal {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.filter {
+  position: fixed;
+  bottom: 50px;
+  right: 10px;
+  padding: 20px;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: #007bff;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.type Select {
+  width: 210px !important;
+}
+
+.select-opt {
+  margin: 0px !important;
+}
+
+.frequency {
+}
+
+.change-icon {
+  border: 1px solid black;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.box {
+  width: 100%;
+  border: 1px solid black;
+  border-radius: 5px;
+}
+
+.active-icon {
+  color: rgba(0, 0, 0, 1);
+}
+
+.inactive-icon {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+/* login */
+
+.login {
+  padding: 10px;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: aliceblue;
+}
+
+.login Form {
+  background: white;
+  max-width: 500px;
+  box-shadow: 0px 2px 2px black;
+}
+
+.flex-anal {
+  display: flex;
+  justify-content: space-between;
+}
+
+.card {
+  margin: 5px 10px;
+}
+
+@media screen and (max-width: 600) {
+  .flex-anal {
+    flex-direction: column;
+  }
+  .card {
+    margin: 5px 2px;
+  }
+}
+
+.more {
+  display: flex;
+  justify-content: space-evenly;
+  margin-bottom: 5px;
+}
+
+.d-flex .right div {
+  font-size: 1rem;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+.action {
+  display: flex;
+  justify-content: center;
+}
+
+/*  NOT */
+.sorry {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
