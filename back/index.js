@@ -11,7 +11,7 @@ dotenv.config({ path: path.resolve(path.join(__dirname, ".env")) });
 
 connectDb();
 
-app.use(cors());
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api/v1/user", require("./routers/userRoute"));
@@ -24,8 +24,25 @@ app.use("/api/v1/transaction", require("./routers/transactionRoute"));
 //   res.sendFile(path.join(__dirname, "./client/build/index.html"));
 // });
 
+app.use(async (err, req, res, next) => {
+  if (err.message === "invalid signature") {
+    return next(
+      res
+        .status(500)
+        .cookie("token", null, { expiresIn: new Date(Date.now()) })
+        .json({
+          message: err.message,
+          stack: err.stack,
+        })
+    );
+  }
+
+  res.status(400).json({
+    message: err.message,
+    stack: err.stack,
+  });
+});
+
 const port = process.env.PORT || 5000;
 
-app.listen(port, () => {
-  console.log(`app is listen ${port}`);
-});
+app.listen(port);

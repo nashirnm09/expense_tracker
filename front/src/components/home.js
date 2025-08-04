@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DatePicker, Form, Input, Table, Modal, Select, message } from "antd";
+import { DatePicker, Table, Modal, Select, message, Tooltip } from "antd";
 import {
   UnorderedListOutlined,
   AreaChartOutlined,
@@ -7,16 +7,65 @@ import {
   DeleteOutlined,
   FilterOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Header from "./header";
 import moment from "moment";
-
 import Analytics from "./analytics";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  deleteTransaction,
+  getTransaction,
+} from "../redux/actions/transActions";
+import UpdateTrans from "./updateTrans";
+import {
+  CLEAR_ERRORS,
+  DELETE_TRANS_RESET,
+} from "../redux/constants/transConstants";
 
-const { RangePicker } = DatePicker;
+const expandedRowRender = (record) => {
+  return (
+    <div key={record._id} className="mt-0 p-3">
+      <div className="flex justify-around">
+        <div className="left">
+          <h6>Date</h6>
+          <h6>Amount</h6>
+          <h6>Type</h6>
+          <h6>Category</h6>
+          <h6>Description</h6>
+          <h6>Reference</h6>
+        </div>
+        <div className="middle">
+          <h6>:</h6>
+          <h6>:</h6>
+          <h6>:</h6>
+          <h6>:</h6>
+          <h6>:</h6>
+          <h6>:</h6>
+        </div>
+        <div className="right">
+          <div> {moment(record.date).format("DD-MM-YYYY")} </div>
+          <div> {record.amount} </div>
+          <div> {record.type} </div>
+          <div> {record.category} </div>
+          <div> {record.description} </div>
+          <div> {record.reference} </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Home = () => {
+  const [filter, setFilter] = useState(false);
+  const [model, setModel] = useState(false);
+  const [frequency, setFrequency] = useState("7");
+  const [selectDate, setSelectDate] = useState([]);
+  const [type, setType] = useState("all");
+  const [viewData, setViewData] = useState("table");
+  const [editable, setEditable] = useState(null);
+  const [width, setWidth] = useState(window.innerWidth);
+
+  const { RangePicker } = DatePicker;
   const [messageApi, contextHolder] = message.useMessage();
 
   const messageSend = (type, text) => {
@@ -26,63 +75,21 @@ const Home = () => {
     });
   };
 
-  const [filter, setFilter] = useState(false);
-  const [data, setData] = useState("");
-  const [model, setModel] = useState(false);
-  const [token, setToken] = useState("");
-  const [frequency, setFrequency] = useState("7");
-  const [selectDate, setSelectDate] = useState([]);
-  const [type, setType] = useState("all");
-  const [viewData, setViewData] = useState("table");
-  const [editable, setEditable] = useState(null);
-  const [change, setChange] = useState(1);
-  const [width, setWidth] = useState(window.innerWidth);
-
-  const expandedRowRender = (record) => {
-    return (
-      <div className="mt-0 p-3 card">
-        <div className="d-flex justify-content-around">
-          <div className="left">
-            <h6>Date</h6>
-            <h6>Amount</h6>
-            <h6>Type</h6>
-            <h6>Category</h6>
-            <h6>Description</h6>
-            <h6>Reference</h6>
-          </div>
-          <div className="middle">
-            <h6>:</h6>
-            <h6>:</h6>
-            <h6>:</h6>
-            <h6>:</h6>
-            <h6>:</h6>
-            <h6>:</h6>
-          </div>
-          <div className="right">
-            <div> {moment(record.date).format("DD-MM-YYYY")} </div>
-            <div> {record.amount} </div>
-            <div> {record.type} </div>
-            <div> {record.category} </div>
-            <div> {record.description} </div>
-            <div> {record.reference} </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  const dispatch = useDispatch();
+  const {
+    trans,
+    deleted,
+    message: mess,
+    error,
+  } = useSelector((state) => state.trans);
 
   const nevigate = useNavigate();
 
   const deleteData = async (record) => {
-    try {
-      await axios.post(`http://localhost:8080/api/v1/${token}/deleteTrans`, {
-        id: record._id,
-      });
-      setChange(change + 1);
-    } catch (error) {}
+    dispatch(deleteTransaction(record._id));
   };
 
-  const column = [
+  const col = [
     {
       title: "Date",
       dataIndex: "date",
@@ -96,42 +103,37 @@ const Home = () => {
       title: "Type",
       dataIndex: "type",
     },
-    {
-      title: "Actions",
-      render: (text, record) => (
-        <div>
+  ];
+
+  const action = {
+    title: "Actions",
+    render: (text, record) => (
+      <div className="flex gap-2">
+        <Tooltip title={"edit"}>
           <EditOutlined
-            style={{ marginRight: "5px" }}
+            className="p-2 hover:bg-stone-200"
             onClick={() => {
               record.date = moment(record.date).format("YYYY-MM-DD");
               setEditable(record);
               setModel(true);
             }}
           />
+        </Tooltip>
+
+        <Tooltip title={"delete"}>
           <DeleteOutlined
+            className="p-2 hover:bg-stone-200"
             onClick={() => {
               deleteData(record);
             }}
           />
-        </div>
-      ),
-    },
-  ];
+        </Tooltip>
+      </div>
+    ),
+  };
 
   const columns = [
-    {
-      title: "Date",
-      dataIndex: "date",
-      render: (text) => <span>{moment(text).format("YYYY-MM-DD")}</span>,
-    },
-    {
-      title: "Amount",
-      dataIndex: "amount",
-    },
-    {
-      title: "Type",
-      dataIndex: "type",
-    },
+    ...col,
     {
       title: "Category",
       dataIndex: "category",
@@ -142,130 +144,47 @@ const Home = () => {
       dataIndex: "description",
       key: "description",
     },
-    {
-      title: "Actions",
-      render: (text, record) => (
-        <div>
-          <EditOutlined
-            style={{ marginRight: "5px" }}
-            onClick={() => {
-              record.date = moment(record.date).format("YYYY-MM-DD");
-              setEditable(record);
-              setModel(true);
-            }}
-          />
-          <DeleteOutlined
-            onClick={() => {
-              deleteData(record);
-            }}
-          />
-        </div>
-      ),
-    },
+    { ...action },
   ];
 
-  const onFinish = async (values) => {
-    if (
-      !values.amount ||
-      !values.type ||
-      !values.description ||
-      !values.category ||
-      !values.date
-    ) {
-      return messageSend("error", "Please fill the all fields");
-    }
-    try {
-      if (editable) {
-        await axios.post(`http://localhost:8080/api/v1/${token}/updateTrans`, {
-          id: editable._id,
-          values,
-        });
-        setChange(change + 1);
-
-        setEditable(null);
-      } else {
-        await axios.post(
-          `http://localhost:8080/api/v1/${token}/addTrans`,
-          values
-        );
-        setChange(change + 1);
-      }
-    } catch (error) {}
-    setModel(false);
+  const get = () => {
+    if (frequency !== "custom") dispatch(getTransaction({ frequency, type }));
+    if (frequency === "custom" && selectDate.length === 2)
+      dispatch(getTransaction({ frequency, selectDate, type }));
   };
+  useEffect(() => {
+    get();
+  }, [frequency, selectDate, nevigate, type]);
 
   useEffect(() => {
-    const dat = async () => {
-      setWidth(window.innerWidth);
+    if (error) {
+      messageSend("error", error);
+      dispatch({ type: CLEAR_ERRORS });
+      return;
+    }
 
-      let toko = JSON.parse(localStorage.getItem("user"));
-      if (!toko) {
-        return nevigate("/login");
-      }
-
-      setToken(toko);
-      try {
-        const res = await axios.post(
-          `http://localhost:8080/api/v1/${toko}/getTrans`,
-          { frequency, selectDate, type }
-        );
-        res.data.data.map((data) => (data.key = data._id));
-        setData(res.data.data);
-      } catch (error) {}
-    };
-    dat();
-  }, [frequency, selectDate, nevigate, type, change]);
+    if (deleted) {
+      messageSend("success", mess);
+      dispatch({ type: DELETE_TRANS_RESET });
+      get();
+      return;
+    }
+  }, [deleted, error, mess, dispatch]);
 
   return (
     <>
       <Header />
       {contextHolder}
-      <Modal
-        title="add transaction"
-        open={model}
-        onCancel={() => {
-          setModel(false);
-        }}
-        footer={false}
-      >
-        <Form initialValues={editable} onFinish={onFinish}>
-          <Form.Item label="Amount" name="amount">
-            <Input type="number" />
-          </Form.Item>
-
-          <Form.Item label="Type" name="type">
-            <Select>
-              <Select.Option value="income">Income</Select.Option>
-              <Select.Option value="expense">Expense</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item label="Category" name="category">
-            <Select>
-              <Select.Option value="medical">Medical</Select.Option>
-              <Select.Option value="College">College</Select.Option>
-              <Select.Option value="fee">Fee</Select.Option>
-            </Select>
-          </Form.Item>
-          <Form.Item label="Date" name="date">
-            <Input type="date" />
-          </Form.Item>
-
-          <Form.Item label="Reference" name="reference">
-            <Input />
-          </Form.Item>
-
-          <Form.Item label="Description" name="description">
-            <Input />
-          </Form.Item>
-          <button className="btn " onClick={() => setModel(false)}>
-            Cancel
-          </button>
-          <button type="submit" className="btn primary-btn">
-            Add New
-          </button>
-        </Form>
-      </Modal>
+      <div>
+        <UpdateTrans
+          setEditable={setEditable}
+          setModel={setModel}
+          editable={editable}
+          messageSend={messageSend}
+          send={get}
+          model={model}
+        />
+      </div>
       {width && width > 600 ? (
         <div className="box my-2">
           <div className="filters-modal px-2 my-3">
@@ -319,7 +238,7 @@ const Home = () => {
             <button
               className="btn btn-primary"
               onClick={() => {
-                setModel(!model);
+                setModel(true);
               }}
             >
               Add transaction
@@ -411,19 +330,19 @@ const Home = () => {
           </Modal>
         </div>
       )}
-      <div className="content">
+      <div className="content px-2">
         {viewData === "table" ? (
           width && width > 600 ? (
-            <Table dataSource={data} columns={columns} />
+            <Table dataSource={trans} columns={columns} />
           ) : (
             <Table
-              dataSource={data}
-              columns={column}
+              dataSource={trans}
+              columns={[...col, { ...action }]}
               expandable={{ expandedRowRender, defaultExpandedRowKeys: ["0"] }}
             />
           )
         ) : (
-          <Analytics data={data} />
+          <Analytics data={trans} />
         )}
       </div>
     </>

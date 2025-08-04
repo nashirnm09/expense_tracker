@@ -2,11 +2,22 @@ import React, { useEffect } from "react";
 import { Button, Form, Input, message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { CLEAR_ERRORS } from "../redux/constants/userConstants";
+import { loginUserAction } from "../redux/actions/userActions";
 
 const Login = () => {
   const [messageApi, contextHolder] = message.useMessage();
 
   const nevigate = useNavigate();
+  const dispatch = useDispatch();
+  const {
+    user,
+    error,
+    success,
+    message: mess,
+    loading,
+  } = useSelector((state) => state.user);
 
   const messageSend = (type, text) => {
     messageApi.open({
@@ -19,38 +30,46 @@ const Login = () => {
     if (!values.username || !values.password) {
       return messageSend("error", "Please fill all fields");
     }
-    try {
-      const res = await axios.post(
-        "http://localhost:8080/api/v1/user/login",
-        values
-      );
-      messageSend("success", "Login Successfully");
-      localStorage.setItem("user", JSON.stringify(res.data.user.username));
-      nevigate("/");
-    } catch (error) {
-      messageSend("error", "Internal error");
-    }
+
+    dispatch(loginUserAction(values));
   };
 
   useEffect(() => {
-    if (JSON.parse(localStorage.getItem("user"))) {
+    if (error) {
+      messageSend("error", error);
+      dispatch({ type: CLEAR_ERRORS });
       nevigate("/");
+      return;
     }
-  }, [nevigate]);
+
+    if (success) {
+      messageSend("success", mess);
+      nevigate("/");
+      return;
+    }
+
+    if (user) {
+      nevigate("/");
+      return;
+    }
+  }, [nevigate, dispatch, mess, user, loading, success, error]);
 
   return (
-    <div className="login rounded">
+    <div className="login ">
       <Form
         name="basic"
         style={{
           maxWidth: 400,
+        }}
+        labelCol={{
+          span: 8,
         }}
         wrapperCol={{
           span: 16,
         }}
         onFinish={onFinish}
         autoComplete="off"
-        className="container my-2"
+        className="container rounded-md my-2"
       >
         {contextHolder}
         <h2 className="text-center font-bold py-3 text-lg">LOGIN FORM</h2>
@@ -62,7 +81,7 @@ const Login = () => {
           <Input.Password />
         </Form.Item>
 
-        <div className="center flex gap-2">
+        <div className="center text-[0.85rem] flex gap-2">
           Not have any account ?{" "}
           <Link className="text-blue-600" to="/sign">
             Create account!
@@ -75,7 +94,12 @@ const Login = () => {
             span: 16,
           }}
         >
-          <Button className="my-1 w-[100px]" type="primary" htmlType="submit">
+          <Button
+            disabled={loading}
+            className="my-1 w-[100px]"
+            type="primary"
+            htmlType="submit"
+          >
             LOG IN
           </Button>
         </Form.Item>

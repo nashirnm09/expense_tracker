@@ -1,9 +1,8 @@
-const express = require("express");
 const User = require("../models/userModel");
 const sendToken = require("../utils/sendToken");
-const jwt = require("jsonwebtoken");
+const expressAsyncHandler = require("express-async-handler");
 
-exports.loginUser = async (req, res, next) => {
+exports.loginUser = expressAsyncHandler(async (req, res, next) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -35,9 +34,9 @@ exports.loginUser = async (req, res, next) => {
   }
 
   sendToken(user, 200, res);
-};
+});
 
-exports.createUser = async (req, res, next) => {
+exports.createUser = expressAsyncHandler(async (req, res, next) => {
   const { name, email, password } = req.body;
 
   if (!email || !name || !password) {
@@ -52,35 +51,10 @@ exports.createUser = async (req, res, next) => {
   const user = await User.create(req.body);
 
   sendToken(user, 200, res);
-};
+});
 
-exports.getUser = async (req, res, next) => {
-  const { token } = req.cookies;
+exports.getUser = expressAsyncHandler(async (req, res, next) => {
+  const user = req.user;
 
-  if (!token) {
-    return next(
-      res.status(500).json({
-        success: false,
-        message: "Please Login to access this route",
-      })
-    );
-  }
-
-  const decodeData = await jwt.verify(token, process.env.JWT_SECRET);
-
-  const user = await User.findById(decodeData.id);
-
-  if (!user) {
-    return next(
-      res.status(500).json({
-        success: false,
-        message: "Please Login to access this route",
-      })
-    );
-  }
-
-  res.status(200).json({
-    success: true,
-    user,
-  });
-};
+  sendToken(user, 200, res);
+});

@@ -2,10 +2,21 @@ import React, { useEffect } from "react";
 import { Button, Form, Input, message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { CLEAR_ERRORS } from "../redux/constants/userConstants";
+import { signUserAction } from "../redux/actions/userActions";
 
 const Sign = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const nevigate = useNavigate();
+  const dispatch = useDispatch();
+  const {
+    user,
+    error,
+    success,
+    message: mess,
+    loading,
+  } = useSelector((state) => state.user);
 
   const messageSend = (type, text) => {
     messageApi.open({
@@ -18,25 +29,27 @@ const Sign = () => {
     if (!values.username || !values.password || !values.email || !values.name) {
       return messageSend("error", "Please fill all fields");
     }
-    try {
-      const res = await axios.post(
-        "http://localhost:8080/api/v1/user/sign",
-        values
-      );
-      messageSend("success", "Sign- in successfully");
-      localStorage.setItem("user", JSON.stringify(res.data.user.username));
-      nevigate(`/`);
-    } catch (error) {
-      console.log(error);
-      messageSend("error", error.message);
-    }
+    dispatch(signUserAction(values));
   };
-
   useEffect(() => {
-    if (JSON.parse(localStorage.getItem("user"))) {
+    if (error) {
+      messageSend("error", error);
+      dispatch({ type: CLEAR_ERRORS });
       nevigate("/");
+      return;
     }
-  }, [nevigate]);
+
+    if (success) {
+      messageSend("success", mess);
+      nevigate("/");
+      return;
+    }
+
+    if (!loading && user) {
+      nevigate("/");
+      return;
+    }
+  }, [nevigate, dispatch, mess, user, loading, success, error]);
 
   return (
     <div className="login">
@@ -89,7 +102,12 @@ const Sign = () => {
             span: 16,
           }}
         >
-          <Button className="my-1 w-[120px]" type="primary" htmlType="submit">
+          <Button
+            disabled={loading}
+            className="my-1 w-[120px]"
+            type="primary"
+            htmlType="submit"
+          >
             SIGN IN
           </Button>
         </Form.Item>

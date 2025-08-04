@@ -127,12 +127,8 @@
   border-radius: 5px;
 }
 
-.active-icon {
-  color: rgba(0, 0, 0, 1);
-}
-
-.inactive-icon {
-  color: rgba(0, 0, 0, 0.9);
+.ant-table-head {
+  background-color: #efefef !important;
 }
 
 /* login */
@@ -159,7 +155,10 @@
 }
 
 .card {
-  margin: 5px 10px;
+  padding: 5px 10px;
+  box-shadow: 0 0 10px #ccc;
+  background-color: white;
+  width: 318px;
 }
 
 @media screen and (max-width: 600) {
